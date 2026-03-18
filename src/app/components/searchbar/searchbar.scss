@@ -1,0 +1,10 @@
+input{
+padding: .8em 0 .8em .4em;
+border: transparent;
+border-radius: 15px;
+}
+input:focus {
+    outline: orange;
+    box-shadow: none;
+    border: 2px solid orange;
+}

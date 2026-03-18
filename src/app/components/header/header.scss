@@ -1,0 +1,126 @@
+.header-wrapper{
+    position: fixed;
+    width: 100vw;
+}
+.header{
+    background-color: rgba(0, 0, 0, 1);
+    color: #fff;
+    padding: 1em .8em 1em .8em;
+    display: flex;
+    justify-content: space-between;
+
+
+}
+.welcome{
+    letter-spacing: 4.5px;
+    font-size: 2em;
+}
+// Required for smooth angle animation in modern browsers
+@property --angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+}
+
+.button-wrapper {
+    position: relative;
+    display: inline-block;
+    border-radius: 14px;
+    //padding: 0px; // ← this is your border thickness (glow lives here)
+    background: #000; // or rgba(0,0,0,0.8) – important: blocks inner glow
+    isolation: isolate; // helps contain filter effects (good practice)
+
+    --angle: 0deg;
+    --glow-color: #ff4500; // bright orange – very vivid
+    --accent-color: #c05727; // deep brown
+    --blur-amount: 12px; // outward blur strength – 10–18px looks nice
+
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0; // fill the padded area = border thickness
+        border-radius: 14px;
+        background: conic-gradient(from var(--angle),
+                var(--glow-color),
+                var(--accent-color) 40deg,
+                var(--glow-color) 80deg,
+                var(--accent-color) 140deg,
+                var(--glow-color) 180deg,
+                var(--accent-color) 220deg,
+                var(--glow-color) 280deg,
+                var(--accent-color) 320deg,
+                var(--glow-color));
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+    }
+
+    // Sharp animated outline (the visible border)
+    &::before {
+        z-index: -1;
+    }
+
+    // Blurred outward glow layer – larger & softer, no inner light
+    &::after {
+        //inset: -#{$blur-amount}; // extends outward only
+        //filter: blur(var(--blur-amount));
+        z-index: -2; // behind the sharp border
+        opacity: 0;
+        // Slightly softer/more glow-focused stops (optional but helps seamlessness)
+        background: conic-gradient(from var(--angle),
+                var(--glow-color) 0deg,
+                var(--accent-color) 45deg,
+                var(--glow-color) 90deg,
+                var(--accent-color) 135deg,
+                var(--glow-color) 180deg,
+                var(--accent-color) 225deg,
+                var(--glow-color) 270deg,
+                var(--accent-color) 315deg,
+                var(--glow-color) 360deg);
+    }
+
+    &:hover {
+
+        &::before,
+        &::after {
+            opacity: 1;
+        }
+
+        &::before {
+            animation: rotate 4s linear infinite;
+        }
+
+        &::after {
+            animation: rotate 5.5s linear infinite reverse; // opposite direction = richer motion
+        }
+    }
+
+    button {
+        position: relative;
+        z-index: 1;
+        display: block;
+        width: 100%;
+        border: none;
+        border-radius: 10px; // slightly smaller = inset look
+        padding: 14px 32px;
+        background: #101010; // solid dark – prevents any inner glow leak
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        /*&:hover {
+            // Optional subtle text glow (still external feel)
+            //text-shadow: 0 0 10px #ff4500, 0 0 20px #ff4500;
+            // transform: scale(1.02);   // tiny pop if you want
+        }*/
+    }
+}
+
+@keyframes rotate {
+    to {
+        --angle: 360deg;
+    }
+}
+

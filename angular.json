@@ -67,6 +67,11 @@
               "buildTarget": "OnlineLibrary:build:development"
             }
           },
+          "options": {
+            "proxyConfig": "proxy.conf.json",
+            "poll": 2000
+
+          },
           "defaultConfiguration": "development"
         },
         "test": {

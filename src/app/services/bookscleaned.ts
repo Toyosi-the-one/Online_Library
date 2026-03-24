@@ -10,6 +10,7 @@ export interface Book {
   isbn: string;
   publishYear: number;
   description: string;
+  key?: string;
 }
 
 @Injectable({
@@ -28,9 +29,10 @@ export class Bookscleaned {
           coverImage: item.cover_i
             ? `https://covers.openlibrary.org/b/id/${item.cover_i}-M.jpg`
             : 'https://via.placeholder.com/150',
-          isbn: item.isbn?.[0] || 'N/A',
+          isbn: item.isbn?.find((i: string) => i.length === 10 || i.length === 13) || null, // only valid ISBNs
           publishYear: item.first_publish_year || 0,
           description: item.subject?.slice(0, 3)?.join(', ') || 'No description',
+          key: item.key // Open Library key e.g., "/works/OL12345W"
         }))
       )
     );

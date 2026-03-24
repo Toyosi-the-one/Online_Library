@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { Book } from '../../../../../services/bookscleaned';
 import { CommonModule } from '@angular/common';
 
@@ -6,8 +6,15 @@ import { CommonModule } from '@angular/common';
   selector: 'app-bookcard',
   templateUrl: './bookcard.html',
   styleUrls: ['./bookcard.scss'],
-  imports:[CommonModule]
+  imports: [CommonModule],
 })
 export class Bookcard {
-  @Input() book!: Book; // receives one book object from CollectionComponent
+  @Input() book!: Book;
+
+  // emit an event when the card is clicked
+  @Output() select = new EventEmitter<Book>();
+
+  onClick() {
+    this.select.emit(this.book);
+  }
 }

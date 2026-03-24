@@ -2,7 +2,8 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Bookscleaned, Book } from '../../../../services/bookscleaned';
 import { Bookcard } from '../../../../components/pages/homepage/collection/bookcard/bookcard';
-import { SearchService } from '../../../../services/search';
+import { Search } from '../../../../services/search';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-collection',
@@ -17,17 +18,17 @@ export class Collection implements OnInit {
 
   constructor(
     private cleanedService: Bookscleaned,
-    private searchService: SearchService,
-    private cdr: ChangeDetectorRef
+    private search: Search,
+    private cdr: ChangeDetectorRef,
+    private router: Router // <- make sure Router is injected
   ) { }
 
   ngOnInit(): void {
     this.cleanedService.getCleanedBooks().subscribe(data => {
       this.books = data;
-      this.filteredBooks = data; // initialize
+      this.filteredBooks = data;
 
-      // subscribe to service AFTER books are loaded
-      this.searchService.searchTerm$.subscribe(term => {
+      this.search.searchTerm$.subscribe(term => {
         this.filterBooks(term);
       });
     });
@@ -35,12 +36,23 @@ export class Collection implements OnInit {
 
   filterBooks(term: string) {
     if (!term) {
-      this.filteredBooks = this.books; // reset if empty
+      this.filteredBooks = this.books;
     } else {
       this.filteredBooks = this.books.filter(book =>
         book.title.toLowerCase().includes(term.toLowerCase())
       );
     }
-    this.cdr.detectChanges(); // ensures UI updates
+    this.cdr.detectChanges();
+  }
+
+  // <- Paste your goToDetails here, inside the Collection class
+  goToDetails(book: any) {
+    console.log('BOOK CLICKED:', book);
+    console.log('BOOK KEY:', book.key);
+
+    const id = book.key?.replace('/works/', '');
+    console.log('FINAL ID:', id);
+
+    this.router.navigate(['/details', id]);
   }
 }

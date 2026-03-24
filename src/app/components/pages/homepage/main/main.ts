@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
-import { Collection } from '../collection/collection';
+import { RouterOutlet } from '@angular/router';
+
 @Component({
   selector: 'app-main',
-  imports: [ Collection],
+  standalone: true,
+  imports: [RouterOutlet], // ✅ REQUIRED
   templateUrl: './main.html',
-  styleUrl: './main.scss',
+  styleUrls: ['./main.scss']
 })
-export class Main {}
+export class Main { }

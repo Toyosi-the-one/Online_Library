@@ -1,6 +1,4 @@
 <div class="collection">
-   <app-bookcard
-  *ngFor="let book of filteredBooks"
-  [book]="book"
-></app-bookcard>
+  <app-bookcard *ngFor="let book of filteredBooks" [book]="book" (select)="goToDetails($event)">
+  </app-bookcard>
 </div>

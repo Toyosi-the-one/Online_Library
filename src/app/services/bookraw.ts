@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class BookRawService {
-  private apiUrl = 'https://openlibrary.org/search.json?q=fiction&limit=250';
+  private apiUrl = '/openlibrary/search.json?q=fiction&limit=100';
 
   constructor(private http: HttpClient) { }
 

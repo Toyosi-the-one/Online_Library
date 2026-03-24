@@ -1,0 +1,24 @@
+@if (book) {
+<div style="background-color: antiquewhite;padding: 20px;border-radius: 8px;max-height: 65vh;overflow-y: scroll;" >
+
+    <h1>{{ book.title }}</h1>
+<div style="display: flex;">
+    <!-- Smart cover selection: skip -1 and other invalid IDs -->
+    @if (getBestCover(book.covers); as coverId) {
+    <img [src]="'https://covers.openlibrary.org/b/id/' + coverId + '-M.jpg'"
+        style="box-shadow: 0 8px 20px rgba(0,0,0,0.3); border: 1px solid #ccc;"
+        alt="{{ book.title }} cover" (error)="onImageError($event)" />
+    } @else {
+    <p><em>No valid cover image available</em></p>
+    }
+    <div style="padding: 25px;">
+    <h3>Description</h3>
+    <p style="line-height: 1.7; max-width: 800px;">
+        {{ book.description || 'No description available.' }}
+    </p>
+    </div>
+</div>
+</div>
+} @else {
+<p>Loading book details...</p>
+}

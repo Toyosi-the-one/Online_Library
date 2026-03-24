@@ -1,0 +1,10 @@
+{
+    "/openlibrary": {
+        "target": "https://openlibrary.org",
+        "secure": true,
+        "changeOrigin": true,
+        "pathRewrite": {
+            "^/openlibrary": ""
+        }
+    }
+}

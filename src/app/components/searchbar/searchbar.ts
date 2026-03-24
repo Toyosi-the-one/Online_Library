@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { SearchService } from '../../services/search';
+import { Search } from '../../services/search';
 
 @Component({
   selector: 'app-searchbar',
@@ -12,9 +12,9 @@ import { SearchService } from '../../services/search';
 export class Searchbar {
   searchTerm: string = '';
 
-  constructor(private searchService: SearchService) { }
+  constructor(private search: Search) { }
 
   onSearch() {
-    this.searchService.setSearchTerm(this.searchTerm); // broadcast
+    this.search.setSearchTerm(this.searchTerm); // broadcast
   }
 }

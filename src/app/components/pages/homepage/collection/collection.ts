@@ -17,7 +17,6 @@ import { BookStore } from '../../../../store/book.store';
   styleUrls: ['./collection.scss'],
 })
 export class Collection implements OnInit, OnDestroy {
-
   // ✅ FIXED: declare first (no initialization here)
   books$!: Observable<Book[]>;
   totalFetched$!: Observable<number>;
@@ -41,11 +40,10 @@ export class Collection implements OnInit, OnDestroy {
     private bookStore: BookStore,
     private search: Search,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
-
     // ✅ FIX: initialize here (after constructor runs)
     this.books$ = this.bookStore.books$;
     this.totalFetched$ = this.bookStore.totalFetched$;
@@ -55,39 +53,31 @@ export class Collection implements OnInit, OnDestroy {
     this.bookStore.loadBooks();
 
     // dropdown values
-    this.totalFetched$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(value => {
-        this.totalFetched = value;
-        this.applyFiltersAndPaginate({ resetToFirstPage: true });
-        this.cdr.detectChanges();
-      });
+    this.totalFetched$.pipe(takeUntil(this.destroy$)).subscribe((value) => {
+      this.totalFetched = value;
+      this.applyFiltersAndPaginate({ resetToFirstPage: true });
+      this.cdr.detectChanges();
+    });
 
-    this.bookLimit$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(value => {
-        this.bookLimit = value;
-        this.applyFiltersAndPaginate({ resetToFirstPage: true });
-        this.cdr.detectChanges();
-      });
+    this.bookLimit$.pipe(takeUntil(this.destroy$)).subscribe((value) => {
+      this.bookLimit = value;
+      this.applyFiltersAndPaginate({ resetToFirstPage: true });
+      this.cdr.detectChanges();
+    });
 
     // books stream
-    this.books$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(data => {
-        this.allBooks = Array.isArray(data) ? data : [];
-        this.applyFiltersAndPaginate({ resetToFirstPage: true });
-        this.cdr.detectChanges();
-      });
+    this.books$.pipe(takeUntil(this.destroy$)).subscribe((data) => {
+      this.allBooks = Array.isArray(data) ? data : [];
+      this.applyFiltersAndPaginate({ resetToFirstPage: true });
+      this.cdr.detectChanges();
+    });
 
     // search stream
-    this.search.searchTerm$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(term => {
-        this.lastSearchTerm = term || '';
-        this.applyFiltersAndPaginate({ resetToFirstPage: true });
-        this.cdr.detectChanges();
-      });
+    this.search.searchTerm$.pipe(takeUntil(this.destroy$)).subscribe((term) => {
+      this.lastSearchTerm = term || '';
+      this.applyFiltersAndPaginate({ resetToFirstPage: true });
+      this.cdr.detectChanges();
+    });
   }
 
   ngOnDestroy(): void {
@@ -104,9 +94,7 @@ export class Collection implements OnInit, OnDestroy {
     if (!term) {
       this.filteredBooks = [...books];
     } else {
-      this.filteredBooks = books.filter(book =>
-        (book.title || '').toLowerCase().includes(term)
-      );
+      this.filteredBooks = books.filter((book) => (book.title || '').toLowerCase().includes(term));
     }
 
     if (resetToFirstPage) {

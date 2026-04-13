@@ -3,15 +3,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { map, filter, tap, takeUntil, distinctUntilChanged } from 'rxjs/operators';
-import { Store } from '@ngrx/store';
-import { loadBookDetails } from '../../../store/book.actions';
+import { BookStore } from '../../../store/book.store';
 
 @Component({
   selector: 'app-details',
   templateUrl: './detailspage.html',
   styleUrls: ['./detailspage.scss'],
   imports: [CommonModule],
-  standalone: true
+  standalone: true,
 })
 export class Detailspage implements OnInit, OnDestroy {
   // The current book detail object loaded from the store
@@ -27,55 +26,62 @@ export class Detailspage implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private store: Store<{ books: any }>,
-    private cdr: ChangeDetectorRef
-  ) { }
+    private bookStore: BookStore,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
     // Listen for route parameter changes and load the correct book details
-    this.route.paramMap.pipe(
-      map(params => params.get('id')),
-      filter((id): id is string => !!id),
-      distinctUntilChanged(),
-      tap(id => {
-        // Reset existing state while new details are fetched
-        this.book = null;
-        this.loading = true;
-        this.error = null;
+    this.route.paramMap
+      .pipe(
+        map((params) => params.get('id')),
+        filter((id): id is string => !!id),
+        distinctUntilChanged(),
+        tap((id) => {
+          // Reset existing state while new details are fetched
+          this.book = null;
+          this.loading = true;
+          this.error = null;
 
-        // Dispatch the action to load book details from the store/effects
-        this.store.dispatch(loadBookDetails({ id }));
-        this.cdr.detectChanges();
-      }),
-      takeUntil(this.destroy$)
-    ).subscribe(id => {
-      // Subscribe to the selected book detail from the store
-      this.store.select(state => state.books.detailsById?.[id])
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(book => {
-          if (book) {
-            this.book = book;
-            this.loading = false;
+          // Trigger the effect to load book details from the store
+          this.bookStore.loadBookDetails(id);
+          this.cdr.detectChanges();
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((id) => {
+        // Subscribe to the selected book detail from the store
+        this.bookStore.detailsById$
+          .pipe(
+            map((detailsById) => detailsById[id]),
+            takeUntil(this.destroy$),
+          )
+          .subscribe((book) => {
+            if (book) {
+              this.book = book;
+              this.loading = false;
+              this.cdr.detectChanges();
+            }
+          });
+
+        // Subscribe to loading state for this book id
+        this.bookStore
+          .select((state) => state.detailsLoadingById[id])
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((isLoading) => {
+            this.loading = !!isLoading;
             this.cdr.detectChanges();
-          }
-        });
+          });
 
-      // Subscribe to loading state for this book id
-      this.store.select(state => state.books.detailsLoadingById?.[id])
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(isLoading => {
-          this.loading = !!isLoading;
-          this.cdr.detectChanges();
-        });
-
-      // Subscribe to error state for this book id
-      this.store.select(state => state.books.detailsErrorById?.[id])
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(err => {
-          this.error = err;
-          this.cdr.detectChanges();
-        });
-    });
+        // Subscribe to error state for this book id
+        this.bookStore
+          .select((state) => state.detailsErrorById[id])
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((err) => {
+            this.error = err;
+            this.cdr.detectChanges();
+          });
+      });
   }
 
   ngOnDestroy() {
@@ -89,7 +95,7 @@ export class Detailspage implements OnInit, OnDestroy {
     if (!covers || covers.length === 0) return null;
 
     // Find the first cover ID that looks valid (greater than 10)
-    return covers.find(id => id && id > 10) || null;
+    return covers.find((id) => id && id > 10) || null;
   }
 
   // Hide the image element if the cover fails to load
@@ -108,5 +114,4 @@ export class Detailspage implements OnInit, OnDestroy {
   goBack() {
     this.router.navigate(['/']);
   }
-
 }

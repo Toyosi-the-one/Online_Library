@@ -1,4 +1,39 @@
-<div class="collection">
-  <app-bookcard *ngFor="let book of filteredBooks" [book]="book" (select)="goToDetails($event)">
-  </app-bookcard>
+<div class="collection-container">
+  <h2>Book Collection</h2>
+
+  <!-- Dropdown 1: Number of books fetched -->
+  <label>Total number of Books fetched:</label>
+  <select [(ngModel)]="totalFetched" (ngModelChange)="onTotalFetchedChange()">
+    <option *ngFor="let option of [10, 20,40, 50, 100, 200]" [ngValue]="option">
+      {{ option }}
+    </option>
+  </select>
+
+  <!-- Dropdown 2: Books per page -->
+  <label>Books per page:</label>
+  <select [(ngModel)]="bookLimit" (ngModelChange)="onBookLimitChange()">
+    <option *ngFor="let option of [5, 10, 20, 25, 50, 100]" [ngValue]="option">
+      {{ option }}
+    </option>
+  </select>
+
+  <!-- Book cards -->
+  <div class="collection" style="justify-content: center; display: flex;">
+    <app-bookcard *ngFor="let book of pagedBooks" [book]="book" (select)="goToDetails($event)">
+    </app-bookcard>
+      <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="prevPage()" [disabled]="currentPage === 1">
+        Previous
+      </button>
+    
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+    
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages">
+        Next
+      </button>
+    </div>
+  </div>
+
+
 </div>

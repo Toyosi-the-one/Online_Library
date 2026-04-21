@@ -1,0 +1,72 @@
+.collection {
+    background-color: white;
+    position: relative;
+    width: 98%;
+    height: 100%;
+    padding: 10px;
+    max-height: 60vh;
+    min-width: 75vw;
+    overflow-y: scroll;
+    //display: grid;
+    //grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+    justify-content: center;
+    //place-content: center;
+    min-height: 60vh;
+
+}
+
+@media (max-width: 900px) {
+    .collection {
+        grid-template-columns: repeat(2, 1fr);
+        /* 2 columns */
+    }
+}
+
+@media (max-width: 500px) {
+    .collection {
+        grid-template-columns: 1fr;
+        /* 1 column */
+    }
+}
+
+.collection {
+    display: flex;
+    flex-wrap: wrap;
+    /* 👈 allows wrapping to next row */
+    justify-content: center;
+    /* 👈 centers the whole grid */
+    gap: 20px;
+}
+
+.book-card {
+    flex: 0 0 calc(20% - 20px);
+    /* 👈 5 columns */
+}
+
+button {
+    padding: 0.5em;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+select {
+    padding: 0.1em;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.required {
+    color: red;
+}
+
+.error {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.form-actions {
+    margin-top: 20px;
+}

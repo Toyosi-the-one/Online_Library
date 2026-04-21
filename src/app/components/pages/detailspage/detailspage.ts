@@ -1,9 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, DestroyRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Subject } from 'rxjs';
-import { map, filter, tap, takeUntil, distinctUntilChanged } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { map, filter, distinctUntilChanged, switchMap, shareReplay } from 'rxjs';
+
 import { BookStore } from '../../../store/book.store';
+import { Book } from '../../../services/bookscleaned';
 
 @Component({
   selector: 'app-details',
@@ -12,106 +14,45 @@ import { BookStore } from '../../../store/book.store';
   imports: [CommonModule],
   standalone: true,
 })
-export class Detailspage implements OnInit, OnDestroy {
-  // The current book detail object loaded from the store
-  book: any = null;
+export class Detailspage {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly bookStore = inject(BookStore);
 
-  // Loading and error flags used by the template
-  loading = false;
-  error: any = null;
+  // This is the ViewModel observable
+  readonly vm$ = this.route.paramMap.pipe(
+    map((params) => params.get('id')),
+    filter((id): id is string => !!id),
+    distinctUntilChanged(),
+    switchMap((id) => {
+      console.log(`🆔 Loading book ID: ${id}`);
+      this.bookStore.loadBookDetails(id);
 
-  // Subject used to unsubscribe from observables when this component is destroyed
-  private readonly destroy$ = new Subject<void>();
+      return this.bookStore
+        .select((state) => ({
+          book: state.detailsById[id] || null,
+          loading: !!state.detailsLoadingById[id],
+          error: state.detailsErrorById[id] || null,
+        }))
+        .pipe(
+          map(({ book, loading, error }) => ({
+            book,
+            loading: loading && !book,
+            error: !book && !loading ? `Book with ID "${id}" not found` : error,
+          })),
+        );
+    }),
+    shareReplay(1),
+    takeUntilDestroyed(this.destroyRef),
+  );
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private bookStore: BookStore,
-    private cdr: ChangeDetectorRef,
-  ) {}
-
-  ngOnInit() {
-    // Listen for route parameter changes and load the correct book details
-    this.route.paramMap
-      .pipe(
-        map((params) => params.get('id')),
-        filter((id): id is string => !!id),
-        distinctUntilChanged(),
-        tap((id) => {
-          // Reset existing state while new details are fetched
-          this.book = null;
-          this.loading = true;
-          this.error = null;
-
-          // Trigger the effect to load book details from the store
-          this.bookStore.loadBookDetails(id);
-          this.cdr.detectChanges();
-        }),
-        takeUntil(this.destroy$),
-      )
-      .subscribe((id) => {
-        // Subscribe to the selected book detail from the store
-        this.bookStore.detailsById$
-          .pipe(
-            map((detailsById) => detailsById[id]),
-            takeUntil(this.destroy$),
-          )
-          .subscribe((book) => {
-            if (book) {
-              this.book = book;
-              this.loading = false;
-              this.cdr.detectChanges();
-            }
-          });
-
-        // Subscribe to loading state for this book id
-        this.bookStore
-          .select((state) => state.detailsLoadingById[id])
-          .pipe(takeUntil(this.destroy$))
-          .subscribe((isLoading) => {
-            this.loading = !!isLoading;
-            this.cdr.detectChanges();
-          });
-
-        // Subscribe to error state for this book id
-        this.bookStore
-          .select((state) => state.detailsErrorById[id])
-          .pipe(takeUntil(this.destroy$))
-          .subscribe((err) => {
-            this.error = err;
-            this.cdr.detectChanges();
-          });
-      });
-  }
-
-  ngOnDestroy() {
-    // Clean up subscriptions when the component is destroyed
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  // Smart method: returns the first valid cover ID (skips -1, 0, etc.)
-  getBestCover(covers: number[] | undefined): number | null {
-    if (!covers || covers.length === 0) return null;
-
-    // Find the first cover ID that looks valid (greater than 10)
-    return covers.find((id) => id && id > 10) || null;
-  }
-
-  // Hide the image element if the cover fails to load
-  onImageError(event: Event) {
-    const img = event.target as HTMLImageElement;
-    img.style.display = 'none';
-    console.warn('Cover image failed to load and was hidden');
-  }
-
-  // Remove HTML tags from description strings for safe display
-  cleanHtml(text: string): string {
-    return text.replace(/<[^>]*>/g, '');
-  }
-
-  // Navigate back to the collection page
-  goBack() {
+  goBack(): void {
     this.router.navigate(['/']);
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    if (img) img.style.display = 'none';
   }
 }

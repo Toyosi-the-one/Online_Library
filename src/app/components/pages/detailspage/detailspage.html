@@ -1,37 +1,51 @@
-@if (book) {
-<div style="background-color: antiquewhite;padding: 20px;border-radius: 8px;max-height: 65vh;overflow-y:auto;" >
+@if (vm$ | async; as vm) {
+  @if (vm.loading) {
+    <p><strong>Loading book details...</strong></p>
+  } @else if (vm.error) {
+    <p style="color: red">{{ vm.error }}</p>
+  } @else if (vm.book) {
+    <div
+      style="
+        background-color: antiquewhite;
+        padding: 20px;
+        border-radius: 8px;
+        max-height: 65vh;
+        overflow-y: auto;
+      "
+    >
+      <h1>{{ vm.book.title }}</h1>
 
-    <h1>{{ book.title }}</h1>
-<div class="details-body">
-    <!-- Fixed-size cover column -->
-    <div class="book-cover-column">
-    @if (getBestCover(book.covers); as coverId) {
-    <img [src]="'https://covers.openlibrary.org/b/id/' + coverId + '-M.jpg'"
-        class="book-cover"
-        alt="{{ book.title }} cover" (error)="onImageError($event)" />
-    } @else {
-    <div class="book-cover book-cover--placeholder">
-      <p><em>No valid cover image available</em></p>
-    </div>
-    }
-    </div>
-    <div class="details-text">
-    <h3>Description</h3>
-    <p class="details-description">
-         {{
-    ((typeof book.description === 'string'
-      ? cleanHtml(book.description)
-      : book.description?.value || ''
-    ).split(/contains:/i)[0]) || 'No description available.'
-  }}
+      <div class="details-body">
+        <div class="book-cover-column">
+          <img
+            [src]="vm.book.coverImage || 'https://placehold.co/218x318?text=No+Cover'"
+            class="book-cover"
+            alt="{{ vm.book.title }} cover"
+            (error)="onImageError($event)"
+            style="height: 318px; width: 218px"
+          />
+        </div>
 
-    </p>
-    <button (click)="goBack()">Back</button>
-    </div>
-    
-</div>
+        <div class="details-text">
+          <h3>Description</h3>
+          <p>{{ vm.book.description || 'No description available.' }}</p>
 
-</div>
-} @else {
-<p>Loading book details...</p>
+          <p><strong>Author:</strong> {{ vm.book.author || 'Unknown' }}</p>
+          <p><strong>Year:</strong> {{ vm.book.publishYear || 'N/A' }}</p>
+          <p><strong>ISBN:</strong> {{ vm.book.isbn || 'N/A' }}</p>
+
+          @if (vm.book.pages) {
+            <p><strong>Pages:</strong> {{ vm.book.pages }}</p>
+          }
+          @if (vm.book.genre) {
+            <p><strong>Genre:</strong> {{ vm.book.genre }}</p>
+          }
+
+          <button (click)="goBack()">← Back to List</button>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <p>No book data available.</p>
+  }
 }

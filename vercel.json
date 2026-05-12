@@ -1,8 +1,7 @@
 {
-  "version": 2,
-  "framework": null,
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": "dist/online-library",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/online-library/browser",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
-

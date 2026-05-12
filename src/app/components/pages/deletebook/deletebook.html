@@ -1,0 +1,85 @@
+<div class="collection-container">
+  <!-- Header -->
+  <h1 style="color: red">Select a Book to Delete</h1>
+
+  <!-- GALLERY VIEW -->
+  <div *ngIf="!selectedBook">
+    <div class="controls">
+      <label>Total books fetched:</label>
+      <select [(ngModel)]="totalFetched" (ngModelChange)="onTotalFetchedChange()">
+        <option *ngFor="let option of [10, 20, 40, 50, 100, 200]" [ngValue]="option">
+          {{ option }}
+        </option>
+      </select>
+
+      <label>Books per page:</label>
+      <select [(ngModel)]="bookLimit" (ngModelChange)="onBookLimitChange()">
+        <option *ngFor="let option of [5, 10, 20, 25, 50, 100]" [ngValue]="option">
+          {{ option }}
+        </option>
+      </select>
+
+      <div class="action-buttons">
+        <button routerLink="/addbook">Add Books</button>
+        <button routerLink="/edit-books">Edit Books</button>
+        <button routerLink="/">Cancel</button>
+      </div>
+    </div>
+
+    <div class="collection">
+      <app-bookcard
+        *ngFor="let book of pagedBooks"
+        [book]="book"
+        (select)="selectBookForDelete(book)"
+      >
+      </app-bookcard>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="prevPage()" [disabled]="currentPage === 1">Previous</button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+  </div>
+
+  <!-- CONFIRMATION VIEW -->
+  <div
+    *ngIf="selectedBook"
+    class="delete-confirmation"
+    style="max-height: 65vh; overflow-y: scroll; background-color: antiquewhite"
+  >
+    <h2>Delete Book Confirmation</h2>
+
+    <div class="book-preview" style="padding: 20px">
+      <img
+        [src]="selectedBook.coverImage || 'https://placehold.co/150x150?text=No+Image+Available'"
+        alt="Cover"
+        class="preview-image"
+        (error)="onImageError($event)"
+        style="height: 318px; width: 218px"
+      />
+
+      <div class="book-info">
+        <h3>{{ selectedBook.title }}</h3>
+        <p><strong>Author:</strong> {{ selectedBook.author }}</p>
+        <p><strong>Publish Year:</strong> {{ selectedBook.publishYear }}</p>
+        <p><strong>ISBN:</strong> {{ selectedBook.isbn || 'N/A' }}</p>
+      </div>
+    </div>
+
+    <div class="warning-message">
+      <p><strong>⚠️ This action cannot be undone!</strong></p>
+      <p>Are you sure you want to permanently delete this book?</p>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" (click)="cancelDelete()" class="cancel-btn" [disabled]="deleting">
+        Cancel
+      </button>
+
+      <button type="button" (click)="confirmDelete()" class="delete-btn" [disabled]="deleting">
+        {{ deleting ? 'Deleting...' : 'Yes, Delete Book' }}
+      </button>
+    </div>
+  </div>
+</div>

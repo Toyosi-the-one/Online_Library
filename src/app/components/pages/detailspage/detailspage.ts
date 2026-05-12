@@ -1,60 +1,59 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { Component, inject, DestroyRef } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { map, filter, distinctUntilChanged, switchMap, shareReplay } from 'rxjs';
+
+import { BookStore } from '../../../store/book.store';
+import { Book } from '../../../services/bookscleaned';
+import { debugLog } from '../../../utils/log';
 
 @Component({
   selector: 'app-details',
   templateUrl: './detailspage.html',
   styleUrls: ['./detailspage.scss'],
   imports: [CommonModule],
-  standalone: true
+  standalone: true,
 })
-export class Detailspage implements OnInit {
-  book: any = null;
+export class Detailspage {
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly bookStore = inject(BookStore);
 
-  constructor(
-    private route: ActivatedRoute,
-    private http: HttpClient,
-    private cdr: ChangeDetectorRef
-  ) { }
+  // This is the ViewModel observable
+  readonly vm$ = this.route.paramMap.pipe(
+    map((params) => params.get('id')),
+    filter((id): id is string => !!id),
+    distinctUntilChanged(),
+    switchMap((id) => {
+      debugLog(`🆔 Loading book ID: ${id}`);
+      this.bookStore.loadBookDetails(id);
 
-  ngOnInit() {
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (!id) return;
+      return this.bookStore
+        .select((state) => ({
+          book: state.detailsById[id] || null,
+          loading: !!state.detailsLoadingById[id],
+          error: state.detailsErrorById[id] || null,
+        }))
+        .pipe(
+          map(({ book, loading, error }) => ({
+            book,
+            loading: loading && !book,
+            error: !book && !loading ? `Book with ID "${id}" not found` : error,
+          })),
+        );
+    }),
+    shareReplay(1),
+    takeUntilDestroyed(this.destroyRef),
+  );
 
-      this.book = null;   // Show loading state
-
-      this.http.get(`https://openlibrary.org/works/${id}.json`)
-        .subscribe({
-          next: (data: any) => {
-            this.book = data;
-            this.cdr.detectChanges();   // Ensure UI updates
-
-            console.log('✅ Book loaded:', data.title);
-            console.log('Covers count:', data.covers?.length);
-          },
-          error: (err) => {
-            console.error('Failed to load book', err);
-            this.cdr.detectChanges();
-          }
-        });
-    });
+  goBack(): void {
+    this.router.navigate(['/']);
   }
 
-  // Smart method: returns the first valid cover ID (skips -1, 0, etc.)
-  getBestCover(covers: number[] | undefined): number | null {
-    if (!covers || covers.length === 0) return null;
-
-    // Find the first cover ID that looks valid (greater than 10)
-    return covers.find(id => id && id > 10) || null;
-  }
-
-  // Fallback if image fails to load
-  onImageError(event: Event) {
+  onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
-    img.style.display = 'none';
-    console.warn('Cover image failed to load and was hidden');
+    if (img) img.style.display = 'none';
   }
 }

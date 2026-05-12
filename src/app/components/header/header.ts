@@ -3,6 +3,7 @@ import { Searchbar } from '../searchbar/searchbar';
 
 @Component({
   selector: 'app-header',
+  standalone: true,
   imports: [Searchbar],
   templateUrl: './header.html',
   styleUrl: './header.scss',

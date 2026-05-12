@@ -1,0 +1,49 @@
+<div class="add-book-container">
+  <h1>Add New Book</h1>
+
+  <form [formGroup]="bookForm" (ngSubmit)="onSubmit()" style="display: flex; flex-direction: column; max-width: 100vw; max-height: 60vh; overflow-y: scroll;background-color: antiquewhite; padding: 20px;">
+
+    <label>Title <span class="required">*</span></label>
+    <input formControlName="title" type="text" />
+    <div *ngIf="bookForm.get('title')?.invalid && bookForm.get('title')?.touched" class="error">
+      Title is required (minimum 3 characters)
+    </div>
+
+    <label>Author <span class="required">*</span></label>
+    <input formControlName="author" type="text" />
+    <div *ngIf="bookForm.get('author')?.invalid && bookForm.get('author')?.touched" class="error">
+      Author is required (minimum 2 characters)
+    </div>
+
+    <label>Cover Image URL</label>
+    <input formControlName="coverImage" type="text" placeholder="https://... or data:image..." />
+
+    <label>ISBN</label>
+    <input formControlName="isbn" type="text" />
+
+    <label>Publish Year</label>
+    <input formControlName="publishYear" type="number" />
+
+    <label>Pages</label>
+    <input formControlName="pages" type="number" />
+
+    <label>Genre</label>
+    <input formControlName="genre" type="text" />
+
+    <label>Description</label>
+    <textarea formControlName="description" rows="5"></textarea>
+
+    <div class="form-actions">
+      <button type="button" (click)="resetForm()" [disabled]="submitting">Reset</button>
+      <button type="submit" [disabled]="submitting || bookForm.invalid">
+        {{ submitting ? 'Adding Book...' : 'Add Book' }}
+      </button>
+    <button routerLink="/">Cancel</button>
+    </div>
+
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+
+  </form>
+</div>

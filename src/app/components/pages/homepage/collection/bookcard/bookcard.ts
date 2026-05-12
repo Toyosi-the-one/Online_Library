@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-bookcard',
+  standalone: true,
   templateUrl: './bookcard.html',
   styleUrls: ['./bookcard.scss'],
   imports: [CommonModule],

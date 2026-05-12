@@ -1,0 +1,82 @@
+<div class="collection-container">
+
+    <!-- Header -->
+    <h1>{{ isEditing ? 'Edit Book' : 'Select a Book to Edit' }}</h1>
+
+    <!-- GALLERY VIEW -->
+    <div *ngIf="!isEditing">
+        <div class="controls">
+            <label>Total books fetched:</label>
+            <select [(ngModel)]="totalFetched" (ngModelChange)="onTotalFetchedChange()">
+                <option *ngFor="let option of [10,20,40,50,100,200]" [ngValue]="option">{{ option }}</option>
+            </select>
+
+            <label>Books per page:</label>
+            <select [(ngModel)]="bookLimit" (ngModelChange)="onBookLimitChange()">
+                <option *ngFor="let option of [5,10,20,25,50,100]" [ngValue]="option">{{ option }}</option>
+            </select>
+
+            <div class="action-buttons">
+                <button routerLink="/addbook">Add Books</button>
+                <button routerLink="/collection">View Collection</button>
+                <button routerLink="/">Cancel</button>
+            </div>
+        </div>
+
+        <div class="collection">
+            <app-bookcard *ngFor="let book of pagedBooks" [book]="book" (select)="editBook(book)">
+            </app-bookcard>
+        </div>
+
+        <div class="pagination" *ngIf="totalPages > 1">
+            <button (click)="prevPage()" [disabled]="currentPage === 1">Previous</button>
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+        </div>
+    </div>
+
+    <!-- EDIT FORM VIEW -->
+    <div *ngIf="isEditing && selectedBook" class="edit-form" style="background-color: antiquewhite;">
+        <h2>Editing: {{ selectedBook.title }}</h2>
+    
+        <form #editForm="ngForm">
+    
+            <label>Title <span class="required">*</span></label>
+            <div>
+                <input [(ngModel)]="selectedBook.title" name="title" required minlength="2" #titleCtrl="ngModel" type="text"
+                    style="width: 40%;" />
+                <div *ngIf="titleCtrl.invalid && titleCtrl.touched" class="error">
+                    Invalid title
+                </div>
+            </div>
+    
+            <label>Author <span class="required">*</span></label>
+            <div>
+                <input [(ngModel)]="selectedBook.author" name="author" required minlength="2" #authorCtrl="ngModel"
+                    type="text" style="width: 40%;" />
+                <div *ngIf="authorCtrl.invalid && authorCtrl.touched" class="error">
+                    Author is required (at least 2 characters)
+                </div>
+            </div>
+    
+            <label>Description</label>
+            <div>
+                <textarea [(ngModel)]="selectedBook.description" name="description" rows="6"></textarea>
+            </div>
+    
+            <label>Cover Image URL</label>
+            <div>
+                <input [(ngModel)]="selectedBook.coverImage" name="coverImage" type="text" style="width: 40%;" />
+            </div>
+    
+            <div class="form-actions">
+                <button type="button" (click)="cancelEdit()" class="cancel-btn">Cancel</button>
+                <button type="button" (click)="saveBook()" [disabled]="saving || editForm.invalid" class="save-btn">
+                    {{ saving ? 'Saving...' : 'Save Changes' }}
+                </button>
+            </div>
+    
+        </form>
+    </div>
+
+</div>

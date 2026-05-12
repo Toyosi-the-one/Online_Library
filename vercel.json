@@ -1,8 +1,14 @@
 {
   "version": 2,
-  "framework": null,
-  "buildCommand": "npm run vercel-build",
-  "outputDirectory": "dist/online-library",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/online-library/browser"
+      }
+    }
+  ],
+  "routes": [{ "src": "/(.*)", "dest": "/index.html" }]
 }
 

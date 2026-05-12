@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject, Observable } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
 import { BookStore } from '../../../../store/book.store';
+import { debugLog } from '../../../../utils/log';
 
 @Component({
   selector: 'app-collection',
@@ -56,7 +57,7 @@ export class Collection implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe(() => {
-        console.log('🔄 NavigationEnd detected - reloading collection');
+        debugLog('🔄 NavigationEnd detected - reloading collection');
         this.loadBooks();
       });
 

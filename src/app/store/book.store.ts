@@ -3,6 +3,7 @@ import { ComponentStore } from '@ngrx/component-store';
 import { Bookscleaned, Book } from '../services/bookscleaned';
 import { switchMap, tap, catchError, mergeMap, exhaustMap } from 'rxjs/operators';
 import { of, from } from 'rxjs';
+import { debugLog, logError } from '../utils/log';
 
 export interface BookState {
   books: Book[];
@@ -122,16 +123,16 @@ export class BookStore extends ComponentStore<BookState> {
         }
 
         this.setLoading(true);
-        console.log('📡 Fetching all books...');
+        debugLog('📡 Fetching all books...');
 
         return this.cleanedService.getCleanedBooks().pipe(
           tap((books: Book[]) => {
-            console.log(`✅ Loaded ${books.length} books`);
+            debugLog(`✅ Loaded ${books.length} books`);
             this.setBooks(books);
             setTimeout(() => this.preloadInitialDetails(20), 1000);
           }),
           catchError((err) => {
-            console.error('Failed to load books', err);
+            logError('Failed to load books', err);
             this.setError(err);
             return of(null);
           }),
@@ -148,25 +149,25 @@ export class BookStore extends ComponentStore<BookState> {
         const state = this.get();
 
         if (state.detailsById[id]) {
-          console.log(`✅ Book ${id} already cached`);
+          debugLog(`✅ Book ${id} already cached`);
           return of(null);
         }
 
         if (state.detailsLoadingById[id]) {
-          console.log(`⏳ Book ${id} is already being loaded`);
+          debugLog(`⏳ Book ${id} is already being loaded`);
           return of(null);
         }
 
-        console.log(`🚀 Loading details for book ID: ${id}`);
+        debugLog(`🚀 Loading details for book ID: ${id}`);
         this.setBookDetailLoading(id);
 
         return this.cleanedService.getCleanedBookDetails(id).pipe(
           tap((book: Book) => {
-            console.log(`✅ Successfully loaded book: "${book.title}" (${id})`);
+            debugLog(`✅ Successfully loaded book: "${book.title}" (${id})`);
             this.setBookDetail({ id, book });
           }),
           catchError((err) => {
-            console.error(`❌ Failed to load book ${id}`, err);
+            logError(`❌ Failed to load book ${id}`, err);
             this.setBookDetailError({ id, error: err });
             return of(null);
           }),
@@ -178,15 +179,15 @@ export class BookStore extends ComponentStore<BookState> {
   readonly addBook = this.effect<Book>((book$) =>
     book$.pipe(
       exhaustMap((newBook) => {
-        console.log('📤 Adding new book to Firebase:', newBook.title);
+        debugLog('📤 Adding new book to Firebase:', newBook.title);
 
         return from(this.cleanedService.addBook(newBook)).pipe(
           tap((savedBook: Book) => {
-            console.log('✅ Book successfully added to Firebase');
+            debugLog('✅ Book successfully added to Firebase');
             this.addBookToState(savedBook);
           }),
           catchError((err: any) => {
-            console.error('❌ Failed to add book to Firebase:', err);
+            logError('❌ Failed to add book to Firebase:', err);
             throw err;
           }),
         );
@@ -198,19 +199,19 @@ export class BookStore extends ComponentStore<BookState> {
     book$.pipe(
       exhaustMap((updatedBook) => {
         if (!updatedBook?.id) {
-          console.error('Cannot update book without ID');
+          logError('Cannot update book without ID');
           return of(null);
         }
 
-        console.log('📤 Updating book in Firebase:', updatedBook.id);
+        debugLog('📤 Updating book in Firebase:', updatedBook.id);
 
         return from(this.cleanedService.updateBook(updatedBook)).pipe(
           tap(() => {
-            console.log('✅ Book updated successfully');
+            debugLog('✅ Book updated successfully');
             this.updateBookInState(updatedBook);
           }),
           catchError((err: any) => {
-            console.error('❌ Update failed:', err);
+            logError('❌ Update failed:', err);
             throw err;
           }),
         );
@@ -223,15 +224,15 @@ export class BookStore extends ComponentStore<BookState> {
       exhaustMap((bookId) => {
         if (!bookId) return of(null);
 
-        console.log('🗑️ Deleting book from Firebase:', bookId);
+        debugLog('🗑️ Deleting book from Firebase:', bookId);
 
         return from(this.cleanedService.deleteBook(bookId)).pipe(
           tap(() => {
-            console.log('✅ Book deleted successfully');
+            debugLog('✅ Book deleted successfully');
             this.deleteBookInState(bookId);
           }),
           catchError((err: any) => {
-            console.error('❌ Delete failed:', err);
+            logError('❌ Delete failed:', err);
             throw err;
           }),
         );
@@ -249,7 +250,7 @@ export class BookStore extends ComponentStore<BookState> {
 
     if (idsToLoad.length === 0) return;
 
-    console.log(`🔄 Preloading details for ${idsToLoad.length} books...`);
+    debugLog(`🔄 Preloading details for ${idsToLoad.length} books...`);
 
     from(idsToLoad)
       .pipe(

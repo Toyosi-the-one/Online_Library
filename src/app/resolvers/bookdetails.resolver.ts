@@ -3,6 +3,7 @@ import { ResolveFn, ActivatedRouteSnapshot, Router } from '@angular/router';
 import { BookStore } from '../store/book.store';
 import { firstValueFrom } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
+import { debugLog, debugWarn, logError } from '../utils/log';
 
 /**
  * Book Detail Resolver
@@ -19,12 +20,12 @@ export const bookDetailResolver: ResolveFn<any> = async (route: ActivatedRouteSn
   const id = route.paramMap.get('id');
 
   if (!id) {
-    console.error('❌ Resolver: No book ID found in route');
+    logError('❌ Resolver: No book ID found in route');
     router.navigate(['/']);
     return null;
   }
 
-  console.log(`🔄 Resolver started for book ID: ${id}`);
+  debugLog(`🔄 Resolver started for book ID: ${id}`);
 
   // Trigger the load (this is safe to call from outside)
   bookStore.loadBookDetails(id);
@@ -43,14 +44,14 @@ export const bookDetailResolver: ResolveFn<any> = async (route: ActivatedRouteSn
     );
 
     if (book) {
-      console.log(`✅ Resolver: Book loaded successfully - "${book.title}"`);
+      debugLog(`✅ Resolver: Book loaded successfully - "${book.title}"`);
     } else {
-      console.warn(`⚠️ Resolver: Book with ID "${id}" not found`);
+      debugWarn(`⚠️ Resolver: Book with ID "${id}" not found`);
     }
 
     return book || null;
   } catch (error) {
-    console.error('❌ Resolver failed to load book:', error);
+    logError('❌ Resolver failed to load book:', error);
     return null;
   }
 };

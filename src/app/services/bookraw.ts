@@ -12,6 +12,7 @@ import {
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { debugLog, logError } from '../utils/log';
 
 @Injectable({
   providedIn: 'root',
@@ -21,10 +22,10 @@ export class BookRawService {
 
   // READ all books
   getRawBooks(): Observable<any[]> {
-    console.log('📡 getRawBooks called');
+    debugLog('📡 getRawBooks called');
     const booksRef = collection(this.firestore, 'books');
     return collectionData(booksRef, { idField: 'id' }).pipe(
-      tap((data) => console.log('📡 Raw books received:', data?.length || 0)),
+      tap((data) => debugLog('📡 Raw books received:', data?.length || 0)),
     );
   }
 
@@ -37,7 +38,7 @@ export class BookRawService {
   // CREATE book
   async addBook(book: any): Promise<any> {
     try {
-      console.log('📤 addBook called with:', book);
+      debugLog('📤 addBook called with:', book);
 
       const cleanBook: any = {};
       Object.keys(book).forEach((key) => {
@@ -56,10 +57,10 @@ export class BookRawService {
       const booksRef = collection(this.firestore, 'books');
       const docRef = await addDoc(booksRef, bookToSave);
 
-      console.log('✅ Book added with ID:', docRef.id);
+      debugLog('✅ Book added with ID:', docRef.id);
       return { ...bookToSave, id: docRef.id };
     } catch (error: any) {
-      console.error('❌ addBook failed:', error);
+      logError('❌ addBook failed:', error);
       throw error;
     }
   }
@@ -71,7 +72,7 @@ export class BookRawService {
         throw new Error('Book ID is required for update');
       }
 
-      console.log('📤 updateBook called for ID:', book.id);
+      debugLog('📤 updateBook called for ID:', book.id);
 
       // Clean data
       const cleanBook: any = {};
@@ -90,10 +91,10 @@ export class BookRawService {
       const bookDoc = doc(this.firestore, `books/${book.id}`);
       await updateDoc(bookDoc, bookToUpdate);
 
-      console.log('✅ Book updated successfully in Firebase:', book.id);
+      debugLog('✅ Book updated successfully in Firebase:', book.id);
       return { ...bookToUpdate, id: book.id };
     } catch (error: any) {
-      console.error('❌ updateBook FAILED:', {
+      logError('❌ updateBook FAILED:', {
         code: error.code,
         message: error.message,
       });
@@ -108,14 +109,14 @@ export class BookRawService {
         throw new Error('Book ID is required for deletion');
       }
 
-      console.log('🗑️ deleteBook called for ID:', bookId);
+      debugLog('🗑️ deleteBook called for ID:', bookId);
 
       const bookDoc = doc(this.firestore, `books/${bookId}`);
       await deleteDoc(bookDoc);
 
-      console.log('✅ Book deleted successfully from Firebase:', bookId);
+      debugLog('✅ Book deleted successfully from Firebase:', bookId);
     } catch (error: any) {
-      console.error('❌ deleteBook FAILED:', {
+      logError('❌ deleteBook FAILED:', {
         code: error.code,
         message: error.message,
       });

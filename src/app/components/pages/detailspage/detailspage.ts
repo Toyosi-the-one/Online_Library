@@ -6,6 +6,7 @@ import { map, filter, distinctUntilChanged, switchMap, shareReplay } from 'rxjs'
 
 import { BookStore } from '../../../store/book.store';
 import { Book } from '../../../services/bookscleaned';
+import { debugLog } from '../../../utils/log';
 
 @Component({
   selector: 'app-details',
@@ -26,7 +27,7 @@ export class Detailspage {
     filter((id): id is string => !!id),
     distinctUntilChanged(),
     switchMap((id) => {
-      console.log(`🆔 Loading book ID: ${id}`);
+      debugLog(`🆔 Loading book ID: ${id}`);
       this.bookStore.loadBookDetails(id);
 
       return this.bookStore

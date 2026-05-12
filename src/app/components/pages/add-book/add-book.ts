@@ -6,6 +6,7 @@ import { BookStore } from '../../../store/book.store';
 import { Book } from '../../../services/bookscleaned';
 import { BookRawService } from '../../../services/bookraw';
 import { RouterLink } from "@angular/router";
+import { debugLog, logError } from '../../../utils/log';
 
 @Component({
   selector: 'app-add-book',
@@ -69,13 +70,13 @@ export class AddBook implements OnInit {
       return;
     }
 
-    console.log('📤 Sending book to Firebase:', newBook);
+    debugLog('📤 Sending book to Firebase:', newBook);
 
     // Save to Firebase
     this.bookRawService
       .addBook(newBook)
       .then((savedBook) => {
-        console.log('✅ Firebase save successful:', savedBook);
+        debugLog('✅ Firebase save successful:', savedBook);
 
         // Update local store with the real Firebase ID
         const bookToStore: Book = {
@@ -90,7 +91,7 @@ export class AddBook implements OnInit {
         this.errorMessage = '';
       })
       .catch((err: any) => {
-        console.error('❌ Failed to save book to Firebase:', err);
+        logError('❌ Failed to save book to Firebase:', err);
 
         if (err.code === 'permission-denied') {
           this.errorMessage = 'Permission denied. Check your Firestore Security Rules.';

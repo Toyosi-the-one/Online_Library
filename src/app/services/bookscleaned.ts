@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BookRawService } from './bookraw';
 import { map, tap, catchError } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { debugLog, logError } from '../utils/log';
 
 export interface Book {
   id: string;
@@ -46,11 +47,11 @@ export class Bookscleaned {
   }
 
   getCleanedBookDetails(id: string): Observable<Book> {
-    console.log(`🔍 Bookscleaned.getCleanedBookDetails called for ID: ${id}`);
+    debugLog(`🔍 Bookscleaned.getCleanedBookDetails called for ID: ${id}`);
 
     return this.bookRaw.getBookByKey(id).pipe(
       tap((rawBook: any) => {
-        console.log(`📦 Raw data from Firestore for ${id}:`, rawBook);
+        debugLog(`📦 Raw data from Firestore for ${id}:`, rawBook);
       }),
       map((book: any): Book => {
         const cleaned: Book = {
@@ -65,11 +66,11 @@ export class Bookscleaned {
           pages: book.pages,
           genre: book.genre,
         };
-        console.log(`🧼 Cleaned book created: "${cleaned.title}" (ID: ${cleaned.id})`);
+        debugLog(`🧼 Cleaned book created: "${cleaned.title}" (ID: ${cleaned.id})`);
         return cleaned;
       }),
       catchError((err: any) => {
-        console.error(`❌ getCleanedBookDetails FAILED for ${id}`, err);
+        logError(`❌ getCleanedBookDetails FAILED for ${id}`, err);
         throw err;
       }),
     );
@@ -80,13 +81,13 @@ export class Bookscleaned {
 
   /** CREATE - Add new book */
   async addBook(book: Book): Promise<any> {
-    console.log('📤 Bookscleaned.addBook called:', book.title);
+    debugLog('📤 Bookscleaned.addBook called:', book.title);
     try {
       const result = await this.bookRaw.addBook(book);
-      console.log('✅ Bookscleaned.addBook successful');
+      debugLog('✅ Bookscleaned.addBook successful');
       return result;
     } catch (error) {
-      console.error('❌ Bookscleaned.addBook failed', error);
+      logError('❌ Bookscleaned.addBook failed', error);
       throw error;
     }
   }
@@ -97,13 +98,13 @@ export class Bookscleaned {
       throw new Error('Book ID is required for update');
     }
 
-    console.log('📤 Bookscleaned.updateBook called for ID:', book.id);
+    debugLog('📤 Bookscleaned.updateBook called for ID:', book.id);
     try {
       const result = await this.bookRaw.updateBook(book);
-      console.log('✅ Bookscleaned.updateBook successful');
+      debugLog('✅ Bookscleaned.updateBook successful');
       return result;
     } catch (error) {
-      console.error('❌ Bookscleaned.updateBook failed', error);
+      logError('❌ Bookscleaned.updateBook failed', error);
       throw error;
     }
   }
@@ -114,12 +115,12 @@ export class Bookscleaned {
       throw new Error('Book ID is required for delete');
     }
 
-    console.log('🗑️ Bookscleaned.deleteBook called for ID:', id);
+    debugLog('🗑️ Bookscleaned.deleteBook called for ID:', id);
     try {
       await this.bookRaw.deleteBook(id);
-      console.log('✅ Bookscleaned.deleteBook successful');
+      debugLog('✅ Bookscleaned.deleteBook successful');
     } catch (error) {
-      console.error('❌ Bookscleaned.deleteBook failed', error);
+      logError('❌ Bookscleaned.deleteBook failed', error);
       throw error;
     }
   }
